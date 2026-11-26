@@ -1,0 +1,686 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<meta name="color-scheme" content="light dark" />
+<link rel="icon" href="data:," />
+<title>Random Joke Machine</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#FFF8E6;
+    --bg2:#FFF1C7;
+    --surface:#FFFFFF;
+    --surface2:#FFFBEB;
+    --ink:#1A1608;
+    --muted:#6B6350;
+    --line:#EADFB8;
+    --accent:#FF6B1A;
+    --accent-dark:#E85A0C;
+    --accent-soft:#FFF0E6;
+    --teal:#0E9A8B;
+    --teal-soft:#E6F7F4;
+    --yellow:#FFC800;
+    --yellow-soft:#FFF3B0;
+    --shadow: 0 20px 50px rgba(90,60,0,.14), 0 4px 14px rgba(90,60,0,.08);
+    --radius:28px;
+  }
+  @media (prefers-color-scheme: dark){
+    :root{
+      --bg:#12100C;
+      --bg2:#1A1710;
+      --surface:#1E1B14;
+      --surface2:#25211A;
+      --ink:#FFF8E6;
+      --muted:#A99E83;
+      --line:#35301F;
+      --accent:#FF7A2E;
+      --accent-dark:#FF6B1A;
+      --accent-soft:#2E1F14;
+      --teal-soft:#122E2A;
+      --yellow-soft:#2E270F;
+      --shadow: 0 20px 50px rgba(0,0,0,.45);
+    }
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0}
+  body{
+    font-family:"DM Sans",system-ui,-apple-system,Segoe UI,Roboto,sans-serif;
+    background:
+      radial-gradient(700px 400px at 15% -5%, var(--yellow-soft) 0%, transparent 60%),
+      radial-gradient(600px 500px at 95% 10%, var(--accent-soft) 0%, transparent 55%),
+      linear-gradient(180deg, var(--bg) 0%, var(--bg2) 100%);
+    color:var(--ink);
+    min-height:100vh;
+    -webkit-font-smoothing:antialiased;
+  }
+  button{font:inherit;cursor:pointer}
+  button, [role="button"], select, summary, a.btn{min-height:44px}
+
+  .wrap{max-width:860px;margin:0 auto;padding:28px 18px 48px}
+  /* Top bar */
+  .topbar{display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:22px}
+  .brand{display:flex;align-items:center;gap:12px}
+  .brand-mark{
+    width:48px;height:48px;border-radius:14px;background:var(--ink);color:var(--bg);
+    display:grid;place-items:center;font-family:"Bricolage Grotesque",sans-serif;font-weight:800;font-size:26px;line-height:1;
+    box-shadow:4px 4px 0 var(--yellow);
+    transform:rotate(-3deg);
+  }
+  .brand-text{line-height:1}
+  .brand-text strong{font-family:"Bricolage Grotesque",sans-serif;font-size:19px;letter-spacing:-.02em;display:block}
+  .brand-text span{font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);font-weight:700}
+  .stats{display:flex;gap:8px}
+  .stat{background:var(--surface);border:1.5px solid var(--line);border-radius:999px;padding:8px 14px;display:flex;gap:7px;align-items:center;font-size:13px;font-weight:700;white-space:nowrap}
+  .stat b{font-family:"Bricolage Grotesque",sans-serif;font-size:15px}
+  .stat span{color:var(--muted);font-weight:500}
+
+  /* Hero */
+  .hero{text-align:center;padding:10px 6px 22px}
+  .hero h1{
+    font-family:"Bricolage Grotesque",sans-serif;
+    font-size:clamp(42px,9vw,72px);
+    line-height:.92;letter-spacing:-.04em;margin:0;font-weight:800;
+  }
+  .hero h1 em{font-style:normal;background:var(--yellow);padding:0 .12em;border-radius:.12em;box-decoration-break:clone;-webkit-box-decoration-break:clone; display:inline-block; transform:rotate(-1deg)}
+  .hero p{margin:14px auto 0;max-width:520px;color:var(--muted);font-size:17px;line-height:1.55}
+  .hero p strong{color:var(--ink)}
+
+  /* Categories */
+  .cats{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin:20px 0 18px}
+  .cat{
+    border:1.5px solid var(--line);background:var(--surface);color:var(--ink);
+    padding:10px 16px;border-radius:999px;font-weight:700;font-size:14px;
+    display:inline-flex;align-items:center;gap:7px;transition:.15s;
+  }
+  .cat small{font-weight:500;color:var(--muted);font-size:12px;background:var(--surface2);border:1px solid var(--line);padding:2px 7px;border-radius:999px}
+  .cat:hover{border-color:var(--ink);transform:translateY(-1px)}
+  .cat.active{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+  .cat.active small{background:rgba(255,255,255,.15);color:inherit;border-color:transparent}
+
+  /* Joke Card */
+  .card{
+    background:var(--surface);border:1.5px solid var(--line);border-radius:var(--radius);
+    box-shadow:var(--shadow);overflow:hidden;position:relative;
+  }
+  .card-top{
+    display:flex;align-items:center;justify-content:space-between;gap:12px;
+    padding:18px 22px 0;
+  }
+  .badge{
+    display:inline-flex;align-items:center;gap:7px;
+    background:var(--teal-soft);color:var(--teal);border:1px solid color-mix(in srgb, var(--teal) 22%, transparent);
+    font-size:12px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;padding:7px 11px;border-radius:999px;
+  }
+  .badge::before{content:"";width:7px;height:7px;border-radius:50%;background:var(--teal)}
+  .joke-no{font-size:13px;color:var(--muted);font-weight:700;letter-spacing:.06em}
+  .joke-no b{color:var(--ink)}
+  .card-body{padding:22px 22px 8px;min-height:210px;display:flex;flex-direction:column;justify-content:center;text-align:center}
+  @media(min-width:640px){.card-body{padding:28px 42px 10px;min-height:230px}.card-top{padding:20px 26px 0}}
+  .setup{
+    font-family:"Bricolage Grotesque",sans-serif;
+    font-size:clamp(26px,5.2vw,38px);line-height:1.08;letter-spacing:-.02em;font-weight:700;margin:0;
+  }
+  .punch-wrap{margin-top:18px}
+  .punch{
+    font-size:clamp(19px,3.6vw,24px);line-height:1.35;font-weight:500;color:var(--ink);
+    background:var(--surface2);border:1.5px dashed var(--line);border-radius:18px;padding:18px 18px;
+  }
+  .punch.hidden-punch{filter:blur(7px);user-select:none;pointer-events:none;opacity:.55}
+  .reveal-row{display:flex;justify-content:center;margin-top:14px}
+  .btn-reveal{
+    background:var(--yellow);color:#1A1608;border:1.5px solid #1A1608;border-radius:999px;
+    padding:11px 20px;font-weight:800;font-size:14px;box-shadow:3px 3px 0 #1A1608;transition:.12s;
+  }
+  .btn-reveal:active{transform:translate(2px,2px);box-shadow:1px 1px 0 #1A1608}
+  .single{font-family:"Bricolage Grotesque",sans-serif;font-size:clamp(26px,5.2vw,36px);line-height:1.12;letter-spacing:-.02em;font-weight:700;margin:0}
+  .single span{color:var(--accent)}
+
+  /* Laugh meter */
+  .reactions{padding:16px 22px 0}
+  .reactions-label{font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);font-weight:800;text-align:center;margin-bottom:10px}
+  .reactions-row{display:flex;gap:8px;justify-content:center;flex-wrap:wrap}
+  .react{
+    flex:1;min-width:100px;max-width:170px;
+    border:1.5px solid var(--line);background:var(--surface);border-radius:16px;padding:11px 10px;
+    font-weight:700;font-size:14px;display:flex;flex-direction:column;align-items:center;gap:2px;
+  }
+  .react small{font-weight:500;color:var(--muted);font-size:12px}
+  .react:hover{border-color:var(--ink)}
+  .react.picked{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+  .react.picked small{color:rgba(255,255,255,.7)}
+  @media(prefers-color-scheme:dark){.react.picked small{color:rgba(0,0,0,.6)} .react.picked{background:var(--yellow);color:#1A1608;border-color:var(--yellow)}}
+
+  /* Actions */
+  .actions{display:flex;flex-wrap:wrap;gap:10px;padding:20px 22px 22px}
+  .btn-primary{
+    flex:1;min-width:200px;
+    background:var(--accent);color:white;border:none;border-radius:18px;
+    padding:16px 20px;font-family:"Bricolage Grotesque",sans-serif;font-weight:800;font-size:19px;letter-spacing:-.01em;
+    box-shadow:0 10px 24px rgba(255,107,26,.35);display:flex;align-items:center;justify-content:center;gap:10px;transition:.15s;
+  }
+  .btn-primary:hover{background:var(--accent-dark);transform:translateY(-1px)}
+  .btn-primary:active{transform:scale(.98)}
+  .btn-icon{
+    width:56px;height:56px;border-radius:18px;border:1.5px solid var(--line);background:var(--surface);
+    display:grid;place-items:center;font-size:20px;transition:.15s;flex-shrink:0;
+  }
+  .btn-icon:hover{border-color:var(--ink)}
+  .btn-icon.faved{background:#FFE8E8;border-color:#FFB3B3;color:#D91E36}
+  @media(prefers-color-scheme:dark){.btn-icon.faved{background:#3A1518;border-color:#6B232A}}
+  .btn-secondary{
+    border:1.5px solid var(--line);background:var(--surface);border-radius:18px;padding:0 18px;font-weight:700;font-size:14px;
+    display:inline-flex;align-items:center;gap:8px;
+  }
+  .btn-secondary:hover{border-color:var(--ink)}
+
+  .hint{text-align:center;color:var(--muted);font-size:13px;margin-top:12px}
+  .hint kbd{background:var(--surface);border:1px solid var(--line);border-bottom-width:2px;border-radius:6px;padding:2px 7px;font-family:inherit;font-size:12px;font-weight:700;color:var(--ink)}
+
+  /* Two columns below */
+  .grid{display:grid;grid-template-columns:1fr;gap:16px;margin-top:22px}
+  @media(min-width:760px){.grid{grid-template-columns:1.15fr .85fr}}
+  .panel{background:var(--surface);border:1.5px solid var(--line);border-radius:22px;padding:20px}
+  .panel h2{font-family:"Bricolage Grotesque",sans-serif;font-size:19px;margin:0;letter-spacing:-.02em;display:flex;align-items:center;justify-content:space-between}
+  .panel h2 span{font-family:"DM Sans",sans-serif;font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);font-weight:800}
+  .panel p.sub{color:var(--muted);font-size:14px;line-height:1.5;margin:6px 0 0}
+  .fav-list,.hist-list{list-style:none;margin:14px 0 0;padding:0;display:flex;flex-direction:column;gap:10px}
+  .fav-item,.hist-item{border:1px solid var(--line);background:var(--surface2);border-radius:14px;padding:13px 14px;font-size:14px;line-height:1.45}
+  .fav-item{display:flex;gap:10px;align-items:flex-start}
+  .fav-item p{margin:0;flex:1}
+  .fav-item button{border:none;background:transparent;font-size:18px;line-height:1;padding:6px;min-height:36px;min-width:36px;color:var(--muted)}
+  .hist-item{cursor:pointer;text-align:left;width:100%;font:inherit}
+  .hist-item:hover{border-color:var(--ink)}
+  .hist-item strong{display:block;font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--teal);margin-bottom:3px}
+  .empty{border:1.5px dashed var(--line);border-radius:14px;padding:18px;text-align:center;color:var(--muted);font-size:14px;line-height:1.5;margin-top:14px}
+  .empty b{color:var(--ink);display:block;font-size:15px;margin-bottom:2px}
+
+  .toast{
+    position:fixed;left:50%;bottom:22px;transform:translateX(-50%) translateY(20px);opacity:0;pointer-events:none;
+    background:var(--ink);color:var(--bg);padding:12px 18px;border-radius:999px;font-weight:700;font-size:14px;box-shadow:0 12px 30px rgba(0,0,0,.25);transition:.25s;z-index:50;white-space:nowrap;
+  }
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+  .burst{position:fixed;pointer-events:none;font-size:22px;z-index:40;animation:fly 900ms ease-out forwards}
+  @keyframes fly{to{transform:translate(var(--dx), var(--dy)) rotate(var(--rot)) scale(.6);opacity:0}}
+  .shake{animation:shake .45s ease}
+  @keyframes shake{0%,100%{transform:translateX(0)}20%{transform:translateX(-6px) rotate(-.4deg)}40%{transform:translateX(6px)}60%{transform:translateX(-4px)}80%{transform:translateX(4px)}}
+  .fadein{animation:fadein .35s ease}
+  @keyframes fadein{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+  @media(prefers-reduced-motion: reduce){*{animation:none!important;transition:none!important}}
+  footer{text-align:center;color:var(--muted);font-size:13px;margin-top:28px;line-height:1.6}
+  footer strong{color:var(--ink)}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="topbar">
+    <div class="brand">
+      <div class="brand-mark">:)</div>
+      <div class="brand-text"><strong>Random Joke Machine</strong><span>Fresh laughs • No repeats</span></div>
+    </div>
+    <div class="stats">
+      <div class="stat"><b id="statViewed">0</b><span>seen</span></div>
+      <div class="stat"><b id="statFavs">0</b><span>saved</span></div>
+    </div>
+  </div>
+
+  <div class="hero">
+    <h1>One click.<br><em>One big laugh.</em></h1>
+    <p>Tap the big button and get a brand-new joke every time. Pick a category, reveal the punchline, and <strong>save the ones that crack you up</strong> — perfect for sharing or for QuickToons ideas.</p>
+  </div>
+
+  <div class="cats" id="cats" role="tablist" aria-label="Joke categories"></div>
+
+  <div class="card" id="card">
+    <div class="card-top">
+      <span class="badge" id="badge">Dad Jokes</span>
+      <span class="joke-no">JOKE <b id="jokeNo">#1</b> &nbsp;•&nbsp; <span id="poolLabel"></span></span>
+    </div>
+
+    <div class="card-body" id="cardBody"></div>
+
+    <div class="reactions" id="reactionsBox">
+      <div class="reactions-label">How funny was that?</div>
+      <div class="reactions-row">
+        <button class="react" data-r="meh">😐 Meh<small>Not for me</small></button>
+        <button class="react" data-r="funny">😄 Funny<small>Got a smile</small></button>
+        <button class="react" data-r="hilarious">🤣 Hilarious<small>Cracked me up</small></button>
+      </div>
+    </div>
+
+    <div class="actions">
+      <button class="btn-primary" id="btnNext">🎲 &nbsp;New Joke <span style="font-weight:500;font-size:13px;opacity:.85">— tap or press Space</span></button>
+      <button class="btn-icon" id="btnFav" aria-label="Save to favorites" title="Save to favorites">♡</button>
+      <button class="btn-secondary" id="btnCopy">⧉ Copy joke</button>
+    </div>
+  </div>
+
+  <p class="hint">Press <kbd>Space</kbd> or <kbd>N</kbd> for the next joke &nbsp;•&nbsp; <kbd>R</kbd> to reveal the punchline</p>
+
+  <div class="grid">
+    <section class="panel" aria-labelledby="favTitle">
+      <h2 id="favTitle">Your favorites <span id="favCountLabel">This session</span></h2>
+      <p class="sub">Tap the heart on any joke to keep it here. Copy them anytime to share with friends.</p>
+      <div id="favEmpty" class="empty"><b>No favorites yet</b>Hit the ♡ on a joke you love and it will show up here.</div>
+      <ul class="fav-list" id="favList"></ul>
+      <div style="display:flex;gap:8px;margin-top:14px;flex-wrap:wrap">
+        <button class="btn-secondary" id="btnCopyFavs" style="flex:1;justify-content:center">Copy all favorites</button>
+        <button class="btn-secondary" id="btnClearFavs">Clear</button>
+      </div>
+    </section>
+
+    <section class="panel" aria-labelledby="histTitle">
+      <h2 id="histTitle">Just seen <span>Tap to revisit</span></h2>
+      <p class="sub">Your last few jokes — tap any one to bring it back.</p>
+      <div id="histEmpty" class="empty"><b>Nothing here yet</b>Your recent jokes will appear here as you go.</div>
+      <div class="hist-list" id="histList" style="display:flex;flex-direction:column;gap:10px;margin-top:14px"></div>
+
+      <div style="margin-top:20px;border-top:1px solid var(--line);padding-top:16px">
+        <h2 style="font-size:16px">Make it yours</h2>
+        <p class="sub">Turn off punchline hiding if you want every joke in full, instantly.</p>
+        <label style="display:flex;align-items:center;gap:10px;margin-top:12px;font-weight:600;font-size:14px;cursor:pointer;padding:8px 0;min-height:44px">
+          <input type="checkbox" id="chkInstant" style="width:20px;height:20px;accent-color:var(--accent)"> Show punchline instantly
+        </label>
+        <label style="display:flex;align-items:center;gap:10px;font-weight:600;font-size:14px;cursor:pointer;padding:8px 0;min-height:44px">
+          <input type="checkbox" id="chkNoRepeat" checked style="width:20px;height:20px;accent-color:var(--accent)"> Avoid repeats until I've seen them all
+        </label>
+      </div>
+    </section>
+  </div>
+
+  <footer><strong>120 jokes</strong> across 6 categories — dad jokes, puns, one-liners, animals, tech &amp; food.<br>All jokes run right here in your browser. Nothing is uploaded.</footer>
+</div>
+
+<div class="toast" id="toast">Copied!</div>
+
+<script>
+var JOKES = [
+  // DAD JOKES
+  {cat:"Dad Jokes", s:"Why don't scientists trust atoms?", p:"Because they make up everything!"},
+  {cat:"Dad Jokes", s:"What do you call a fake noodle?", p:"An impasta."},
+  {cat:"Dad Jokes", s:"Why did the scarecrow win an award?", p:"Because he was outstanding in his field."},
+  {cat:"Dad Jokes", s:"I only know 25 letters of the alphabet.", p:"I don't know y."},
+  {cat:"Dad Jokes", s:"What do you call cheese that isn't yours?", p:"Nacho cheese."},
+  {cat:"Dad Jokes", s:"Why did the math book look so sad?", p:"Because it had too many problems."},
+  {cat:"Dad Jokes", s:"What did the ocean say to the beach?", p:"Nothing, it just waved."},
+  {cat:"Dad Jokes", s:"Why don't skeletons fight each other?", p:"They don't have the guts."},
+  {cat:"Dad Jokes", s:"How do you make a tissue dance?", p:"Put a little boogie in it."},
+  {cat:"Dad Jokes", s:"What do you call a can opener that doesn't work?", p:"A can't opener."},
+  {cat:"Dad Jokes", s:"Why did the bicycle fall over?", p:"Because it was two-tired."},
+  {cat:"Dad Jokes", s:"What did one wall say to the other wall?", p:"I'll meet you at the corner."},
+  {cat:"Dad Jokes", s:"How does a penguin build its house?", p:"Igloos it together."},
+  {cat:"Dad Jokes", s:"Why did the coffee file a police report?", p:"It got mugged."},
+  {cat:"Dad Jokes", s:"What do you call a factory that makes okay products?", p:"A satisfactory."},
+  {cat:"Dad Jokes", s:"Did you hear about the restaurant on the moon?", p:"Great food. No atmosphere."},
+  {cat:"Dad Jokes", s:"Why did the golfer bring two pairs of pants?", p:"In case he got a hole in one."},
+  {cat:"Dad Jokes", s:"How do you catch a squirrel?", p:"Climb a tree and act like a nut."},
+  {cat:"Dad Jokes", s:"What do you call a sleeping bull?", p:"A bulldozer."},
+  {cat:"Dad Jokes", s:"Why don't eggs tell jokes?", p:"They'd crack each other up."},
+
+  // PUNS
+  {cat:"Puns", s:"I'm reading a book about anti-gravity.", p:"It's impossible to put down."},
+  {cat:"Puns", s:"Why did the stadium get so hot after the game?", p:"All the fans left."},
+  {cat:"Puns", s:"I used to be a banker, but I lost interest.", p:null},
+  {cat:"Puns", s:"What do you call a bear with no teeth?", p:"A gummy bear."},
+  {cat:"Puns", s:"Why are elevator jokes so classic?", p:"They work on many levels."},
+  {cat:"Puns", s:"I wondered why the baseball kept getting bigger.", p:"Then it hit me."},
+  {cat:"Puns", s:"What did the buffalo say to his son when he left?", p:"Bison."},
+  {cat:"Puns", s:"Why did the picture go to jail?", p:"Because it was framed."},
+  {cat:"Puns", s:"What do you call a fish without eyes?", p:"A fsh."},
+  {cat:"Puns", s:"I'm on a seafood diet.", p:"I see food and I eat it."},
+  {cat:"Puns", s:"Why did the cookie go to the doctor?", p:"Because it was feeling crumby."},
+  {cat:"Puns", s:"What do you call a pig that does karate?", p:"A pork chop."},
+  {cat:"Puns", s:"Why was the broom late?", p:"It overswept."},
+  {cat:"Puns", s:"What did the grape do when it got stepped on?", p:"It let out a little wine."},
+  {cat:"Puns", s:"I used to play piano by ear.", p:"Now I use my hands."},
+  {cat:"Puns", s:"Why did the belt go to jail?", p:"For holding up pants."},
+  {cat:"Puns", s:"What do you call a snowman with a six-pack?", p:"An abdominal snowman."},
+  {cat:"Puns", s:"Why did the tomato blush?", p:"Because it saw the salad dressing."},
+  {cat:"Puns", s:"What do you call a dinosaur that crashes a car?", p:"Tyrannosaurus Wrecks."},
+  {cat:"Puns", s:"I told my wife she was drawing her eyebrows too high.", p:"She looked surprised."},
+
+  // ONE-LINERS
+  {cat:"One-Liners", s:"I told my computer I needed a break, and now it won't stop sending me Kit Kat ads.", p:null},
+  {cat:"One-Liners", s:"My bed is a magical place where I suddenly remember everything I forgot to do.", p:null},
+  {cat:"One-Liners", s:"I don't need a hairstylist — my pillow gives me a new hairstyle every morning.", p:null},
+  {cat:"One-Liners", s:"Common sense is like deodorant. The people who need it most never use it.", p:null},
+  {cat:"One-Liners", s:"I'm not lazy, I'm just on energy-saving mode.", p:null},
+  {cat:"One-Liners", s:"My wallet is like an onion. Opening it makes me cry.", p:null},
+  {cat:"One-Liners", s:"I run like the winded.", p:null},
+  {cat:"One-Liners", s:"Parallel lines have so much in common. Shame they'll never meet.", p:null},
+  {cat:"One-Liners", s:"I'm great at multitasking — I can waste time, be unproductive, and procrastinate all at once.", p:null},
+  {cat:"One-Liners", s:"My brain has too many tabs open.", p:null},
+  {cat:"One-Liners", s:"I used to think I was indecisive, but now I'm not so sure.", p:null},
+  {cat:"One-Liners", s:"The early bird can have the worm. I'll take coffee.", p:null},
+  {cat:"One-Liners", s:"I'm not arguing, I'm just explaining why I'm right.", p:null},
+  {cat:"One-Liners", s:"If at first you don't succeed, skydiving is not for you.", p:null},
+  {cat:"One-Liners", s:"My password is the last 16 digits of pi.", p:null},
+  {cat:"One-Liners", s:"I don't have a bucket list, I have a 'maybe someday if I feel like it' list.", p:null},
+  {cat:"One-Liners", s:"Adulting is soup and I am a fork.", p:null},
+  {cat:"One-Liners", s:"I'm on a whiskey diet. I've lost three days already.", p:null},
+  {cat:"One-Liners", s:"Silence is golden — unless you have kids, then silence is suspicious.", p:null},
+  {cat:"One-Liners", s:"I put my phone on airplane mode, but it's not flying.", p:null},
+
+  // ANIMALS
+  {cat:"Animals", s:"What do you call a dog that does magic tricks?", p:"A Labracadabrador."},
+  {cat:"Animals", s:"Why do cows have hooves instead of feet?", p:"Because they lactose."},
+  {cat:"Animals", s:"What do you call a fish wearing a bowtie?", p:"Sofishticated."},
+  {cat:"Animals", s:"Why did the cat sit on the computer?", p:"To keep an eye on the mouse."},
+  {cat:"Animals", s:"What do you get when you cross a snowman and a dog?", p:"Frostbite."},
+  {cat:"Animals", s:"Why don't oysters share their pearls?", p:"Because they're shellfish."},
+  {cat:"Animals", s:"What do you call an alligator in a vest?", p:"An investigator."},
+  {cat:"Animals", s:"How do bees get to school?", p:"On the school buzz."},
+  {cat:"Animals", s:"What do you call a lazy kangaroo?", p:"A pouch potato."},
+  {cat:"Animals", s:"Why did the duck get banned from the store?", p:"He kept putting things on his bill."},
+  {cat:"Animals", s:"What do frogs order at restaurants?", p:"French flies."},
+  {cat:"Animals", s:"Why are cats bad storytellers?", p:"Because they only have one tail."},
+  {cat:"Animals", s:"What do you call a cow with no legs?", p:"Ground beef."},
+  {cat:"Animals", s:"How does a bee brush its hair?", p:"With a honeycomb."},
+  {cat:"Animals", s:"What did the duck say when it bought lipstick?", p:"Put it on my bill."},
+  {cat:"Animals", s:"Why did the elephant bring a suitcase to the jungle?", p:"Because he wanted to pack his trunk."},
+  {cat:"Animals", s:"What do you call a pony with a sore throat?", p:"A little horse."},
+  {cat:"Animals", s:"Why do seagulls fly over the sea?", p:"Because if they flew over the bay, they'd be bagels."},
+  {cat:"Animals", s:"What do you call a group of disorganized cats?", p:"A cat-astrophe."},
+  {cat:"Animals", s:"How do you know if an ant is a boy or a girl?", p:"They're all girls — otherwise they'd be uncles."},
+
+  // TECH
+  {cat:"Tech", s:"Why do programmers prefer dark mode?", p:"Because light attracts bugs."},
+  {cat:"Tech", s:"Why did the developer go broke?", p:"Because he used up all his cache."},
+  {cat:"Tech", s:"What do you call a computer that sings?", p:"A Dell — Adele, get it?"},
+  {cat:"Tech", s:"Why was the smartphone wearing glasses?", p:"It lost its contacts."},
+  {cat:"Tech", s:"How many programmers does it take to change a light bulb?", p:"None — that's a hardware problem."},
+  {cat:"Tech", s:"Why did the PowerPoint presentation cross the road?", p:"To get to the other slide."},
+  {cat:"Tech", s:"What did the Wi-Fi say to the computer?", p:"I feel a real connection between us."},
+  {cat:"Tech", s:"Why don't robots get afraid?", p:"Because they have nerves of steel."},
+  {cat:"Tech", s:"Why did the computer go to the doctor?", p:"It had a virus."},
+  {cat:"Tech", s:"What do you call a robot who takes the long way around?", p:"R2-Detour."},
+  {cat:"Tech", s:"Why was the mobile phone so tired?", p:"It had been running all day."},
+  {cat:"Tech", s:"I told a UDP joke once...", p:"I don't know if anyone got it, and I didn't care if they did."},
+  {cat:"Tech", s:"Why did the web developer walk out of the restaurant?", p:"He didn't like the table layout."},
+  {cat:"Tech", s:"What is a computer's favorite snack?", p:"Microchips."},
+  {cat:"Tech", s:"Why did the smartphone go to therapy?", p:"It had too many unresolved notifications."},
+  {cat:"Tech", s:"How does a computer get drunk?", p:"It takes screenshots."},
+  {cat:"Tech", s:"Why do Java developers wear glasses?", p:"Because they don't C#."},
+  {cat:"Tech", s:"What did the router say to the doctor?", p:"It hurts when IP."},
+  {cat:"Tech", s:"Why was the keyboard always calm?", p:"It knew how to keep its space."},
+  {cat:"Tech", s:"There's a band called 1023MB.", p:"They haven't got a gig yet."},
+
+  // FOOD
+  {cat:"Food", s:"What room doesn't have doors?", p:"A mushroom."},
+  {cat:"Food", s:"Why did the banana go to the doctor?", p:"It wasn't peeling well."},
+  {cat:"Food", s:"What do you call a sad strawberry?", p:"A blueberry."},
+  {cat:"Food", s:"Why did the student eat his homework?", p:"Because the teacher said it was a piece of cake."},
+  {cat:"Food", s:"What do you call cheese that is sad?", p:"Blue cheese."},
+  {cat:"Food", s:"Why don't melons get married?", p:"Because they cantaloupe."},
+  {cat:"Food", s:"What did the lettuce say to the celery?", p:"Quit stalking me."},
+  {cat:"Food", s:"Why did the cookie cry?", p:"Because its mother was a wafer so long."},
+  {cat:"Food", s:"What do you call a noodle in disguise?", p:"An impasta — again, but in a different outfit."},
+  {cat:"Food", s:"How do you fix a broken pizza?", p:"With tomato paste."},
+  {cat:"Food", s:"What did the mama bread say to her kids?", p:"It's way past your breadtime."},
+  {cat:"Food", s:"Why did the coffee go to therapy?", p:"It had a latte on its mind."},
+  {cat:"Food", s:"What do you call a can of soda that sings?", p:"A pop star."},
+  {cat:"Food", s:"Why was the apple embarrassed?", p:"It saw the fruit salad dressing."},
+  {cat:"Food", s:"What do ghosts eat for dinner?", p:"Spook-ghetti."},
+  {cat:"Food", s:"Why did the orange stop in the middle of the road?", p:"It ran out of juice."},
+  {cat:"Food", s:"Why did the M&M go to school?", p:"Because it wanted to be a Smartie."},
+  {cat:"Food", s:"How do you make an apple turnover?", p:"Push it down a hill."},
+  {cat:"Food", s:"What did the egg say to the frying pan?", p:"You crack me up."},
+  {cat:"Food", s:"Why did the baker go to therapy?", p:"He had too many emotional rolls."}
+];
+
+var CATS = ["All","Dad Jokes","Puns","One-Liners","Animals","Tech","Food"];
+var state = {
+  cat: "All",
+  current: null,
+  currentIdx: -1,
+  seen: {}, // idx -> true
+  seenOrder: [],
+  viewed: 0,
+  favs: [], // array of global indices
+  history: [], // recent indices, newest first
+  revealed: false,
+  ratings: {} // idx -> rating
+};
+
+var els = {
+  cats: document.getElementById('cats'),
+  badge: document.getElementById('badge'),
+  jokeNo: document.getElementById('jokeNo'),
+  poolLabel: document.getElementById('poolLabel'),
+  body: document.getElementById('cardBody'),
+  card: document.getElementById('card'),
+  btnNext: document.getElementById('btnNext'),
+  btnFav: document.getElementById('btnFav'),
+  btnCopy: document.getElementById('btnCopy'),
+  statViewed: document.getElementById('statViewed'),
+  statFavs: document.getElementById('statFavs'),
+  favList: document.getElementById('favList'),
+  favEmpty: document.getElementById('favEmpty'),
+  histList: document.getElementById('histList'),
+  histEmpty: document.getElementById('histEmpty'),
+  toast: document.getElementById('toast'),
+  chkInstant: document.getElementById('chkInstant'),
+  chkNoRepeat: document.getElementById('chkNoRepeat')
+};
+
+function poolIndices(){
+  if(state.cat==="All") return JOKES.map(function(_,i){return i});
+  var out=[]; JOKES.forEach(function(j,i){ if(j.cat===state.cat) out.push(i); }); return out;
+}
+function jokeText(j){
+  return j.p ? (j.s + " " + j.p) : j.s;
+}
+function showToast(msg){
+  els.toast.textContent = msg;
+  els.toast.classList.add('show');
+  clearTimeout(showToast._t);
+  showToast._t = setTimeout(function(){ els.toast.classList.remove('show'); }, 1800);
+}
+function burst(){
+  var emojis = ["😂","🤣","✨","🎉","😄"];
+  for(var i=0;i<6;i++){
+    var s=document.createElement('span');
+    s.className='burst';
+    s.textContent=emojis[Math.floor(Math.random()*emojis.length)];
+    s.style.left=(45+Math.random()*20)+'%';
+    s.style.top='42%';
+    s.style.setProperty('--dx', (Math.random()*220-110)+'px');
+    s.style.setProperty('--dy', (-(60+Math.random()*120))+'px');
+    s.style.setProperty('--rot', (Math.random()*90-45)+'deg');
+    document.body.appendChild(s);
+    (function(el){ setTimeout(function(){ el.remove(); }, 950); })(s);
+  }
+}
+
+function renderCats(){
+  els.cats.innerHTML='';
+  CATS.forEach(function(c){
+    var count = c==="All" ? JOKES.length : JOKES.filter(function(j){return j.cat===c}).length;
+    var b=document.createElement('button');
+    b.className='cat'+(state.cat===c?' active':'');
+    b.innerHTML = escapeHtml(c)+' <small>'+count+'</small>';
+    b.onclick=function(){ state.cat=c; renderCats(); nextJoke(true); };
+    els.cats.appendChild(b);
+  });
+}
+function escapeHtml(str){
+  return str.replace(/[&<>"']/g, function(m){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]; });
+}
+
+function pickNext(){
+  var pool = poolIndices();
+  var candidates = pool;
+  if(els.chkNoRepeat.checked){
+    var unseen = pool.filter(function(i){ return !state.seen[i]; });
+    if(unseen.length===0){
+      // reset seen for this pool only
+      pool.forEach(function(i){ delete state.seen[i]; });
+      state.seenOrder = state.seenOrder.filter(function(i){ return pool.indexOf(i)===-1; });
+      unseen = pool.slice();
+      showToast("You've seen them all in this category — starting fresh!");
+    }
+    candidates = unseen;
+  }
+  // avoid picking same as current if possible
+  var filtered = candidates.filter(function(i){ return i!==state.currentIdx; });
+  if(filtered.length) candidates = filtered;
+  var pick = candidates[Math.floor(Math.random()*candidates.length)];
+  return pick;
+}
+
+function renderJoke(idx, opts){
+  opts = opts || {};
+  var j = JOKES[idx];
+  state.current = j; state.currentIdx = idx;
+  state.revealed = els.chkInstant.checked || !j.p;
+  if(!opts.fromHistory){
+    state.viewed++;
+    state.seen[idx]=true;
+    if(state.seenOrder.indexOf(idx)===-1) state.seenOrder.push(idx);
+    // history
+    state.history = state.history.filter(function(x){return x!==idx});
+    state.history.unshift(idx);
+    state.history = state.history.slice(0,6);
+  }
+  els.badge.textContent = j.cat;
+  els.jokeNo.textContent = '#'+(idx+1);
+  var pool = poolIndices();
+  var seenInPool = pool.filter(function(i){return state.seen[i]}).length;
+  els.poolLabel.textContent = seenInPool + ' / ' + pool.length + ' in ' + (state.cat==="All"?"all categories":state.cat);
+
+  var html='';
+  if(j.p){
+    html += '<p class="setup fadein">'+escapeHtml(j.s)+'</p>';
+    html += '<div class="punch-wrap fadein"><div class="punch'+(state.revealed?'':' hidden-punch')+'" id="punchEl">'+escapeHtml(j.p)+'</div>';
+    if(!state.revealed){
+      html += '<div class="reveal-row"><button class="btn-reveal" id="btnReveal">👀 &nbsp;Reveal punchline</button></div>';
+    }
+    html += '</div>';
+  } else {
+    html += '<p class="single fadein">'+escapeHtml(j.s)+'</p>';
+  }
+  els.body.innerHTML = html;
+
+  var rb = document.getElementById('btnReveal');
+  if(rb) rb.onclick = revealPunch;
+
+  // fav button state
+  var isFav = state.favs.indexOf(idx)!==-1;
+  els.btnFav.textContent = isFav ? '♥' : '♡';
+  els.btnFav.classList.toggle('faved', isFav);
+
+  // reactions
+  document.querySelectorAll('.react').forEach(function(b){
+    b.classList.toggle('picked', state.ratings[idx]===b.getAttribute('data-r'));
+  });
+
+  els.statViewed.textContent = state.viewed;
+  els.statFavs.textContent = state.favs.length;
+  renderHistory();
+  renderFavs();
+}
+
+function revealPunch(){
+  state.revealed = true;
+  var p = document.getElementById('punchEl');
+  if(p) p.classList.remove('hidden-punch');
+  var rb = document.getElementById('btnReveal');
+  if(rb) rb.remove();
+  burst();
+}
+
+function nextJoke(isCatChange){
+  var idx = pickNext();
+  els.card.classList.remove('shake'); void els.card.offsetWidth; els.card.classList.add('shake');
+  renderJoke(idx);
+  if(!isCatChange && Math.random()<0.35) { /* occasional burst handled on reveal / hilarious */ }
+}
+
+function renderFavs(){
+  els.favList.innerHTML='';
+  els.favEmpty.style.display = state.favs.length ? 'none':'block';
+  state.favs.forEach(function(idx){
+    var j=JOKES[idx];
+    var li=document.createElement('li'); li.className='fav-item';
+    var p=document.createElement('p'); p.textContent=jokeText(j);
+    var cat=document.createElement('div'); cat.style.cssText='font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-weight:800;margin-top:4px'; cat.textContent=j.cat;
+    var wrap=document.createElement('div'); wrap.style.flex='1'; wrap.appendChild(p); wrap.appendChild(cat);
+    var btn=document.createElement('button'); btn.textContent='✕'; btn.setAttribute('aria-label','Remove favorite'); btn.title='Remove';
+    btn.onclick=function(){ state.favs = state.favs.filter(function(x){return x!==idx}); renderJoke(state.currentIdx,{fromHistory:true}); showToast('Removed from favorites'); };
+    li.appendChild(wrap); li.appendChild(btn);
+    els.favList.appendChild(li);
+  });
+  els.statFavs.textContent = state.favs.length;
+}
+function renderHistory(){
+  els.histList.innerHTML='';
+  var items = state.history.slice(1,5); // exclude current at [0] for list feel, but show if fromHistory nav
+  if(state.history.length<=1 && state.viewed<=1){ els.histEmpty.style.display='block'; return; }
+  els.histEmpty.style.display='none';
+  var show = state.history.slice(0,5);
+  show.forEach(function(idx){
+    if(idx===state.currentIdx && show.length>1) return;
+    var j=JOKES[idx];
+    var b=document.createElement('button'); b.className='hist-item';
+    b.innerHTML='<strong>'+escapeHtml(j.cat)+' • #'+(idx+1)+'</strong>'+escapeHtml(j.s);
+    b.onclick=function(){ renderJoke(idx,{fromHistory:false}); showToast('Brought it back!'); };
+    els.histList.appendChild(b);
+  });
+  if(els.histList.children.length===0) els.histEmpty.style.display='block';
+}
+
+async function copyText(text, msg){
+  try{ await navigator.clipboard.writeText(text); showToast(msg||'Copied to clipboard!'); }
+  catch(e){
+    var ta=document.createElement('textarea'); ta.value=text; document.body.appendChild(ta); ta.select();
+    try{ document.execCommand('copy'); showToast(msg||'Copied to clipboard!'); }catch(_){ showToast('Copy failed — select the text manually'); }
+    ta.remove();
+  }
+}
+
+// Events
+els.btnNext.onclick = function(){ nextJoke(false); };
+els.btnFav.onclick = function(){
+  var idx=state.currentIdx;
+  if(state.favs.indexOf(idx)!==-1){ state.favs=state.favs.filter(function(x){return x!==idx}); showToast('Removed from favorites'); }
+  else { state.favs.unshift(idx); showToast('Saved to favorites ♥'); burst(); }
+  renderJoke(idx,{fromHistory:true});
+};
+els.btnCopy.onclick = function(){ copyText(jokeText(state.current)); };
+document.getElementById('btnCopyFavs').onclick=function(){
+  if(!state.favs.length){ showToast('No favorites to copy yet'); return; }
+  var text = state.favs.map(function(idx,i){ return (i+1)+'. '+jokeText(JOKES[idx]); }).join('\n\n');
+  copyText(text, state.favs.length+' favorite(s) copied!');
+};
+document.getElementById('btnClearFavs').onclick=function(){
+  if(!state.favs.length){ showToast('No favorites to clear'); return; }
+  state.favs=[]; renderJoke(state.currentIdx,{fromHistory:true}); showToast('Favorites cleared');
+};
+document.querySelectorAll('.react').forEach(function(b){
+  b.onclick=function(){
+    var r=b.getAttribute('data-r');
+    state.ratings[state.currentIdx]=r;
+    document.querySelectorAll('.react').forEach(function(x){ x.classList.toggle('picked', x===b); });
+    if(r==='hilarious'){ burst(); showToast('Glad that one landed! 🤣'); }
+    else if(r==='funny'){ showToast('Noted — more like that coming up'); }
+    else { showToast('Fair enough — try the next one'); }
+  };
+});
+els.chkInstant.onchange=function(){ if(state.current) renderJoke(state.currentIdx,{fromHistory:true}); };
+
+document.addEventListener('keydown', function(e){
+  if(e.target && (e.target.tagName==='INPUT' || e.target.tagName==='TEXTAREA')) return;
+  if(e.code==='Space' || e.key==='n' || e.key==='N'){ e.preventDefault(); nextJoke(false); }
+  if(e.key==='r' || e.key==='R'){ if(state.current && state.current.p && !state.revealed) revealPunch(); }
+});
+
+// Init
+renderCats();
+// pick a strong opener — a classic dad joke
+renderJoke(0);
+</script>
+</body>
+</html>
